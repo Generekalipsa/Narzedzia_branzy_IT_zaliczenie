@@ -7,3 +7,4 @@ arg_parser = argparse.ArgumentParser(
 arg_parser.add_argument('pathFile1', type=open)
 arg_parser.add_argument('pathFile2', type=open)
 args = arg_parser.parse_args()
+
