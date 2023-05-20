@@ -76,6 +76,23 @@ def yml_load(yml_file):
     else:
         return False
 
+
+def yml_write(object, object_type):
+    match object_type:
+        case "json":
+            try:
+                yml_data = yaml.dump(object)
+                return yml_data
+            except Exception as err:
+                print("Error occured while parsing JSON:", err)
+        case "xml":
+            try:
+                xml_data = xmltodict.parse(object)
+                yml_data = yaml.dump(xml_data)
+                return yml_data
+            except Exception as err:
+                print("Error occured while parsing XML:", err)
+
 file_a_type = (file_a.name.split(".", 1))[1]
 file_b_type = (file_b.name.split(".", 1))[1]
 
@@ -105,4 +122,14 @@ else:
                 json_file = open(file_b.name, "w")
                 json_file.write(json_data)
                 json_file.close()
-
+        case "yaml" | "yml":
+            if file_a_type == "json":
+                yml_data = yml_write(json_object, file_a_type)
+                yml_file = open(file_b.name, "w")
+                yml_file.write(yml_data)
+                yml_file.close()
+            elif file_a_type == "xml":
+                yml_data = yml_write(xml_object, file_a_type)
+                yml_file = open(file_b.name, "w")
+                yml_file.write(yml_data)
+                yml_file.close()
