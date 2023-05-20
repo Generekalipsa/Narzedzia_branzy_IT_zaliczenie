@@ -60,17 +60,17 @@ def json_load(json_file):
         return False
 
 
-def json_write(object, object_type):
-    match object_type:
+def json_write(obj, obj_type):
+    match obj_type:
         case "yml" | "yaml":
             try:
-                json_data = json.dumps(object, indent=2, separators=(", ", ": "))
+                json_data = json.dumps(obj, indent=2, separators=(", ", ": "))
                 return json_data
             except yaml.YAMLError as err:
                 print("Error occured while parsing YAML:", err)
         case "xml":
             try:
-                xml_data = xmltodict.parse(object)
+                xml_data = xmltodict.parse(obj)
                 json_data = json.dumps(xml_data)
                 return json_data
             except Exception as err:
@@ -89,17 +89,17 @@ def yml_load(yml_file):
         return False
 
 
-def yml_write(object, object_type):
-    match object_type:
+def yml_write(obj, obj_type):
+    match obj_type:
         case "json":
             try:
-                yml_data = yaml.dump(object)
+                yml_data = yaml.dump(obj)
                 return yml_data
             except Exception as err:
                 print("Error occured while parsing JSON:", err)
         case "xml":
             try:
-                xml_data = xmltodict.parse(object)
+                xml_data = xmltodict.parse(obj)
                 yml_data = yaml.dump(xml_data)
                 return yml_data
             except Exception as err:
@@ -118,6 +118,26 @@ def xml_load(xml_file):
         return False
 
 
+def xml_write(obj, obj_type):
+    match obj_type:
+        case "json":
+            try:
+                json_data = json.dumps(obj)
+                json_data = "[" + json_data + "]"
+                json_data = json.loads(json_data)
+                xml_data = xmltodict.unparse({'root': json_data}, pretty=True)
+                return xml_data
+            except Exception as err:
+                print("Error occured while parsing JSON:", err)
+        case "yml" | "yaml":
+            try:
+                yml_data = yaml.safe_dump(obj)
+                xml_data = xmltodict.unparse({'root': yml_data}, pretty=True)
+                return xml_data
+            except Exception as err:
+                print("Error occured while parsing YAML:", err)
+
+
 file_a_type = (file_a.name.split(".", 1))[1]
 file_b_type = (file_b.name.split(".", 1))[1]
 
@@ -126,37 +146,51 @@ if file_a_type == file_b_type:
 else:
     match file_a_type:
         case "json":
-            json_object = json_load(file_a)
+            json_obj = json_load(file_a)
+            print(json_obj)
         case "yml" | "yaml":
-            yml_object = yml_load(file_a)
+            yml_obj = yml_load(file_a)
+            print(yml_obj)
         case "xml":
-            xml_object = xml_load(file_a)
+            xml_obj = xml_load(file_a)
+            print(xml_obj)
         case _:
-            json_object = None
-            yml_object = None
-            xml_object = None
+            json_obj = None
+            yml_obj = None
+            xml_obj = None
 
 
     match file_b_type:
         case "json":
             if file_a_type == "yaml" or file_a_type == "yml":
-                json_data = json_write(yml_object, file_a_type)
+                json_data = json_write(yml_obj, file_a_type)
                 json_file = open(file_b.name, "w")
                 json_file.write(json_data)
                 json_file.close()
             elif file_a_type == "xml":
-                json_data = json_write(xml_object, file_a_type)
+                json_data = json_write(xml_obj, file_a_type)
                 json_file = open(file_b.name, "w")
                 json_file.write(json_data)
                 json_file.close()
         case "yaml" | "yml":
             if file_a_type == "json":
-                yml_data = yml_write(json_object, file_a_type)
+                yml_data = yml_write(json_obj, file_a_type)
                 yml_file = open(file_b.name, "w")
                 yml_file.write(yml_data)
                 yml_file.close()
             elif file_a_type == "xml":
-                yml_data = yml_write(xml_object, file_a_type)
+                yml_data = yml_write(xml_obj, file_a_type)
                 yml_file = open(file_b.name, "w")
                 yml_file.write(yml_data)
                 yml_file.close()
+        case "xml":
+            if file_a_type == "json":
+                xml_data = xml_write(json_obj, file_a_type)
+                xml_file = open(file_b.name, "w")
+                xml_file.write(xml_data)
+                xml_file.close()
+            elif file_a_type == "yml" or file_a_type == "yaml":
+                xml_data = xml_write(yml_obj, file_a_type)
+                xml_file = open(file_b.name, "w")
+                xml_file.write(xml_data)
+                xml_file.close()
