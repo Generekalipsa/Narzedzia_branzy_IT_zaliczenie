@@ -18,7 +18,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/upload_artifact@v3
+    - uses: actions/checkout@v3
     - name: Set up Python 3.11
       uses: actions/setup-python@v3
       with:
@@ -32,3 +32,8 @@ jobs:
       run: |
         # stop the build if there are Python syntax errors or undefined names
         pyinstaller.exe --onefile program.py
+    - uses: actions/upload_artifact@v3
+	  with:
+		name: my-artifact
+		path: path/to/artifact/world.txt
+    
