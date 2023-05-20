@@ -12,6 +12,7 @@ args = arg_parser.parse_args()
 file_a = args.pathFile1
 # file_b = args.pathFile1
 
+
 def validate(file, f_type):
     match f_type:
         case "j":
@@ -20,6 +21,9 @@ def validate(file, f_type):
             except ValueError as err:
                 print("JSON syntax is invalid")
                 print("Details:", err)
+                return False
+            except FileNotFoundError:
+                print("Can't find file:", file.name)
                 return False
             finally:
                 file.close()
