@@ -10,7 +10,7 @@ arg_parser.add_argument('pathFile2', type=argparse.FileType('w'))
 args = arg_parser.parse_args()
 
 file_a = args.pathFile1
-file_b = args.pathFile1
+file_b = args.pathFile2
 
 
 def validate(file, file_type):
@@ -28,6 +28,13 @@ def validate(file, file_type):
             finally:
                 file.close()
             return True
+        case "yml":
+            try:
+                yaml.safe_load(file)
+                return True
+            except yaml.YAMLError as err:
+                print("Error occured while parsing YAML:", err)
+                return False
 
 
 def json_load(json_file):
@@ -43,10 +50,9 @@ def json_load(json_file):
 
 def json_write(object, object_type):
     match object_type:
-        case "yml", "yaml":
+        case "yml" | "yaml":
             try:
-                yaml_data = yaml.safe_load(object)
-                json_data = json.dumps(yaml_data)
+                json_data = json.dumps(object, indent=2, separators=(", ", ": "))
                 return json_data
             except yaml.YAMLError as err:
                 print("Error occured while parsing YAML:", err)
@@ -59,8 +65,19 @@ def json_write(object, object_type):
                 print("Error occured while parsing XML:", err)
 
 
+def yml_load(yml_file):
+    valid_yml = validate(yml_file, "yml")
+    if valid_yml:
+        file = open(yml_file.name, "r")
+        yml_content = file.read()
+        file.close()
+        data = yaml.safe_load(yml_content)
+        return data
+    else:
+        return False
+
 file_a_type = (file_a.name.split(".", 1))[1]
-file_b_type = (file_a.name.split(".", 1))[1]
+file_b_type = (file_b.name.split(".", 1))[1]
 
 if file_a_type == file_b_type:
     print(file_a.name, "is already in", file_a_type, "file format")
@@ -68,7 +85,12 @@ else:
     match file_a_type:
         case "json":
             json_object = json_load(file_a)
-
+        case "yml" | "yaml":
+            yml_object = yml_load(file_a)
+        case _:
+            json_object = None
+            yml_object = None
+            xml_object = None
 
 
     match file_b_type:
@@ -76,11 +98,11 @@ else:
             if file_a_type == "yaml" or file_a_type == "yml":
                 json_data = json_write(yml_object, file_a_type)
                 json_file = open(file_b.name, "w")
-                json.dump(json_data, json_file)
+                json_file.write(json_data)
                 json_file.close()
             elif file_a_type == "xml":
                 json_data = json_write(xml_object, file_a_type)
                 json_file = open(file_b.name, "w")
-                json.dump(json_data, json_file)
+                json_file.write(json_data)
                 json_file.close()
 
