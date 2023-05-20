@@ -33,7 +33,7 @@ jobs:
         # stop the build if there are Python syntax errors or undefined names
         pyinstaller.exe --onefile program.py
     - uses: actions/upload_artifact@v3
-	  with:
-		name: my-artifact
-		path: path/to/artifact/world.txt
+      with:
+	name: my-artifact
+	path: program.exe
     
