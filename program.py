@@ -35,6 +35,18 @@ def validate(file, file_type):
             except yaml.YAMLError as err:
                 print("Error occured while parsing YAML:", err)
                 return False
+            finally:
+                file.close()
+        case "xml":
+            try:
+                xml_data = file.read()
+                xmltodict.parse(xml_data)
+                return True
+            except Exception as err:
+                print("Error occured while parsing XML:", err)
+                return False
+            finally:
+                file.close()
 
 
 def json_load(json_file):
@@ -93,6 +105,19 @@ def yml_write(object, object_type):
             except Exception as err:
                 print("Error occured while parsing XML:", err)
 
+
+def xml_load(xml_file):
+    valid_xml = validate(xml_file, "xml")
+    if valid_xml:
+        file = open(xml_file.name, "r")
+        xml_content = file.read()
+        file.close()
+        data = xmltodict.parse(xml_content)
+        return data
+    else:
+        return False
+
+
 file_a_type = (file_a.name.split(".", 1))[1]
 file_b_type = (file_b.name.split(".", 1))[1]
 
@@ -104,6 +129,8 @@ else:
             json_object = json_load(file_a)
         case "yml" | "yaml":
             yml_object = yml_load(file_a)
+        case "xml":
+            xml_object = xml_load(file_a)
         case _:
             json_object = None
             yml_object = None
