@@ -1,16 +1,6 @@
+import os
 import argparse
 import json, yaml, xmltodict
-
-arg_parser = argparse.ArgumentParser(
-                    prog='Config Converter',
-                    description='Converts config files in xml, json and yml(yaml)')
-
-arg_parser.add_argument('pathFile1', type=argparse.FileType('r'))
-arg_parser.add_argument('pathFile2', type=argparse.FileType('w'))
-args = arg_parser.parse_args()
-
-file_a = args.pathFile1
-file_b = args.pathFile2
 
 
 def validate(file, file_type):
@@ -138,28 +128,47 @@ def xml_write(obj, obj_type):
                 print("Error occured while parsing YAML:", err)
 
 
-file_a_type = (file_a.name.split(".", 1))[1]
-file_b_type = (file_b.name.split(".", 1))[1]
+arg_parser = argparse.ArgumentParser(
+                    prog='Config Converter',
+                    description='Converts config files in xml, json and yml(yaml)')
+arg_parser.add_argument('pathFile1')
+arg_parser.add_argument('pathFile2')
+args = arg_parser.parse_args()
+file_a_path = args.pathFile1
+file_b_path = args.pathFile2
+with open(file_a_path, "r") as file_a:
+    file_a_type = (file_a.name.split(".", 1))[1]
 
-if file_a_type == file_b_type:
-    print(file_a.name, "is already in", file_a_type, "file format")
+if os.path.exists(file_b_path):
+    with open(file_b_path, "r") as file_b:
+        file_b_type = (file_b.name.split(".", 1))[1]
+        file_b_exists = True
 else:
+    with open(file_b_path, "w") as file_b:
+        file_b_type = (file_b.name.split(".", 1))[1]
+        file_b_exists = False
+
+if file_b_exists:
+    if (file_a_type == "yaml" or file_a_type == "yml") and (file_b_type == "yaml" or file_b_type == "yml"):
+        print(file_a.name, "is already in yaml file format")
+    elif file_a_type == file_b_type:
+        print(file_a.name, "is already in", file_a_type, "file format")
+else:
+    file_a = open(file_a_path, "r")
     match file_a_type:
         case "json":
             json_obj = json_load(file_a)
-            print(json_obj)
         case "yml" | "yaml":
             yml_obj = yml_load(file_a)
-            print(yml_obj)
         case "xml":
             xml_obj = xml_load(file_a)
-            print(xml_obj)
         case _:
             json_obj = None
             yml_obj = None
             xml_obj = None
+    file_a.close()
 
-
+    file_b = open(file_b_path, "w")
     match file_b_type:
         case "json":
             if file_a_type == "yaml" or file_a_type == "yml":
@@ -194,3 +203,4 @@ else:
                 xml_file = open(file_b.name, "w")
                 xml_file.write(xml_data)
                 xml_file.close()
+    file_b.close()
